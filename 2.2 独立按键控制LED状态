@@ -1,0 +1,31 @@
+#include <REGX52.H>
+void Delay1ms(unsigned int xms)		//@11.0592MHz
+{
+	unsigned char i, j;
+	while(xms)
+	{
+			i = 2;
+			j = 199;
+			do
+			{
+				while (--j);
+			} while (--i);	
+			xms--;
+	}
+}
+
+void main()
+{  //按一次亮，再按一次灭
+		while(1)
+		{
+				if(P3_1==0)
+				{
+					Delay1ms(20); //按下时消抖
+					while(P3_1==0); //松开跳出while循环，不松开一直循环，所以灯不会有反应
+					Delay1ms(20); //松开时消抖
+					
+					P2_0=~P2_0; //取反，灭变亮，亮变灭
+				}
+		}
+}
+
