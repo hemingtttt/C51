@@ -115,7 +115,7 @@ void main()
 
 
 
-
+#####方法二：中断驱动+轮询（控制流水灯）
 //main.c  流水灯，按下K1改变方向
 #include <REGX52.H>
 #include "Timer0.h"
