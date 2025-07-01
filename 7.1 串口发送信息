@@ -1,0 +1,99 @@
+//UART.h
+#ifndef __UART_H_
+#define __UART_H_
+void UART_Init(); //初始化
+void UART_SendByte(unsigned char Byte);//只发送，不接收	
+#endif
+
+
+//UART.c
+#include <REGX52.H>
+//Function Definition
+/**
+  * @brief 串口初始化 4800bps@11.0592MHz
+  * @param  无
+  * @retval 无
+  */
+
+void UART_Init()  //初始化 4800bps@11.0592MHz
+{
+	SCON = 0x40; //0100 0000
+	PCON |= 0x80; 
+	
+	TMOD &= 0x0F;	//设置定时器1模式  0000 1111
+	TMOD |= 0x20;	//设置定时器1模式  0010 0000
+	TL1 = 0xF4;		//设定定时初值
+	TH1 = 0xF4;		//设定定时器重装值
+	ET1 = 0;		//禁止定时器1中断
+	TR1 = 1;		//启动定时器1
+
+}
+
+//Function Definition
+/**
+  * @brief 串口发送一个字节数据
+  * @param  Byte 要发送一个字节数字
+  * @retval 无
+  */
+
+void UART_SendByte(unsigned char Byte) //只发送，不接收 
+{
+	SBUF = Byte;
+  while(TI==0); //发送成功跳出循环，TI变为1
+	TI = 0;    //重置为0
+}
+
+//串口中断函数模板（用在下一个例子中）
+//void UART_Routine() interrupt 4 //串口中断号为4
+//{ //RI：接收中断请求标志位 
+//	if(RI==1) //RI=1向主机请求中断响
+//	{
+//		RI=0;//应中断后必须用软件复位，即RI=0  
+//	}
+//}
+
+#####方法一：定时+轮询
+//main.c
+//每一秒发送一个字节
+#include <REGX52.H>
+#include "Delay.h"
+#include "UART.h"
+
+unsigned char Sec;
+
+void main()
+{
+	UART_Init(); //初始化
+	
+	while(1)
+	{
+		UART_SendByte(Sec); //发送 16进制格式
+		Sec++;
+		Delay(1000);
+	}
+}
+
+#####方法二：中断驱动
+#include <REGX52.H>
+#include "Delay.h"
+#include "UART.h"
+
+void main()
+{
+	UART_Init();
+	
+	while(1)
+	{
+		
+	}
+}
+
+void UART_Routine() interrupt 4 //串口中断号为4
+{ //RI：接收中断请求标志位 
+	if(RI==1) //RI=1向主机请求中断响
+	{
+		P2=~SBUF; 
+		UART_SendByte(SBUF);
+		RI=0;//应中断后必须用软件复位，即RI=0  
+	}
+}
